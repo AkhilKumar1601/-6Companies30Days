@@ -1,24 +1,68 @@
 #include<iostream>
 #include<vector>
-#include<algorithm>
 using namespace std;
 
 class Solution {
 public:
-    bool lol(int ind, string &s, vector<int> &dp, vector<string> &wordDict){
-        if(ind==s.size()) return true;
-        if(dp[ind]!=-1) return dp[ind];
-        for(int i=ind;i<s.size();i++){
-            string v= s.substr(ind,i-ind+1);
-            if(find(wordDict.begin(),wordDict.end(),v)!=wordDict.end()){
-                if(lol(i+1,s,dp,wordDict)) return dp[ind]=true;
+    bool check( vector<string>& wordDict, string& s) {
+        for(auto i : wordDict){
+            if(s == i) return true;
+        }
+        return false;
+    }
+
+    bool solveUsingRecursion(string &s, vector<string>& wordDict, int start) {
+        if(start == s.size()) return true;
+
+        bool flag = false;
+        string word = "";
+        for(int i = start; i < s.size(); i++) {
+            word += s[i];
+            if(check(wordDict,word)) {
+               flag = flag || solveUsingRecursion(s,wordDict,i+1);
             }
         }
-        return dp[ind]=false;
+
+        return flag;
     }
+
+    bool solveUsingMem(string &s, vector<string>& wordDict, int start, vector<int> &dp) {
+        if(start == s.size()) return true;
+
+        if(dp[start] != -1) return dp[start];
+
+        bool flag = false;
+        string word = "";
+        for(int i = start; i < s.size(); i++) {
+            word += s[i];
+            if(check(wordDict,word)) {
+               flag = flag || solveUsingMem(s,wordDict,i+1,dp);
+            }
+        }
+
+        return dp[start] = flag;
+    }
+
+    bool solveUsingTabulation(string s, vector<string>& wordDict) {
+        vector<bool> dp(s.size()+1,true);
+
+        for(int start = s.size()-1; start >= 0; start--) {
+            bool flag = false;
+            string word = "";
+            for(int i = start; i < s.size(); i++) {
+                word.push_back(s[i]);      //word += s[i];
+                if(check(wordDict,word)) {
+                   flag = flag || dp[i+1];
+                }
+            }
+            dp[start] = flag;
+        }
+
+        return dp[0];
+    }
+
     bool wordBreak(string s, vector<string>& wordDict) {
-        int n=s.size();
-        vector<int> dp(n+1,-1);
-        return lol(0,s,dp,wordDict);
+        //vector<int> dp(s.size(),-1);
+        return solveUsingTabulation(s,wordDict);
     }
 };
